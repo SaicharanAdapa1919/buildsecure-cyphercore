@@ -19,6 +19,7 @@ const app = express();
 const PORT = Number(process.env.PORT || 5000);
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  'https://buildsecure-frontend.vercel.app',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://127.0.0.1:5173',
@@ -59,12 +60,22 @@ app.use(mutationLimiter);
 app.get('/', (req, res) => res.json({ success: true, service: 'FinTrack API', status: 'healthy' }));
 app.get('/health', (req, res) => res.json({ success: true, service: 'FinTrack API' }));
 app.get('/api/health', (req, res) => res.json({ success: true, service: 'FinTrack API' }));
+
+// Mount routes on /api
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/reports', reportRoutes);
+
+// Also mount routes on root in case Vercel rewrites strip /api prefix
+app.use('/auth', authRoutes);
+app.use('/transactions', transactionRoutes);
+app.use('/budgets', budgetRoutes);
+app.use('/dashboard', dashboardRoutes);
+app.use('/ai', aiRoutes);
+app.use('/reports', reportRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
