@@ -191,7 +191,30 @@ function Stat({title, value, icon: Icon, type, raw}) {
 function Transactions({transactions,reload,setMessage}) {
   const [form,setForm]=useState({type:'EXPENSE',amount:'',category:'Food',description:'',transaction_date:new Date().toISOString().slice(0,10)});
   const [filter,setFilter]=useState('');
-  const add = async e => { e.preventDefault(); try { await api.post('/transactions',form); setForm({...form,amount:'',description:''}); setMessage('Budget created successfully'); reload(); } catch(e){setMessage(e.response?.data?.message||'Unable to add transaction');} };
+  const add = async e => {
+    e.preventDefault();
+    try {
+      const categoryToSend = form.category === 'CUSTOM' ? (form.customCategory || '').trim() : form.category;
+      if (!categoryToSend) {
+        setMessage('Please enter a category name');
+        return;
+      }
+      const payload = {
+        type: form.type,
+        amount: Number(form.amount),
+        category: categoryToSend,
+        description: form.description || '',
+        transaction_date: form.transaction_date
+      };
+      await api.post('/transactions', payload);
+      setForm({ ...form, amount: '', description: '', customCategory: '' });
+      setMessage('Transaction added successfully!');
+      reload();
+    } catch(e) {
+      console.error('Transaction add error:', e);
+      setMessage(e.response?.data?.message || e.response?.data?.errors?.[0]?.msg || 'Unable to add transaction');
+    }
+  };
   const del = async id => { if(!confirm('Delete this transaction?')) return; try {await api.delete(`/transactions/${id}`); reload();} catch(e){setMessage('Unable to delete transaction');} };
   const shown=transactions.filter(t=>!filter||t.type===filter);
   return <div className="page-content"><div className="grid-two">
