@@ -37,7 +37,7 @@ router.get('/', [
     const limit = Number(req.query.limit || 50);
     const offset = (page - 1) * limit;
 
-    const [rows] = await pool.execute(
+    const [rows] = await pool.query(
       `SELECT id, type, amount, category, description, transaction_date, created_at, updated_at
        FROM transactions WHERE ${conditions.join(' AND ')}
        ORDER BY transaction_date DESC, id DESC
