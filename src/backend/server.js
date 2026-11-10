@@ -56,6 +56,8 @@ app.use(enforceBrowserOrigin);
 app.use(express.json({ limit: '50kb', strict: true }));
 app.use(mutationLimiter);
 
+app.get('/', (req, res) => res.json({ success: true, service: 'FinTrack API', status: 'healthy' }));
+app.get('/health', (req, res) => res.json({ success: true, service: 'FinTrack API' }));
 app.get('/api/health', (req, res) => res.json({ success: true, service: 'FinTrack API' }));
 app.use('/api/auth', authRoutes);
 app.use('/api/transactions', transactionRoutes);
