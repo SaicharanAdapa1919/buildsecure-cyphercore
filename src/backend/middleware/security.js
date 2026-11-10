@@ -15,9 +15,13 @@ export function enforceBrowserOrigin(req, res, next) {
     return next();
   }
 
-  const expectedOrigin = normalizeOrigin(
-    process.env.FRONTEND_URL || 'http://localhost:5173'
-  );
+  const allowedOrigins = [
+    normalizeOrigin(process.env.FRONTEND_URL),
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174'
+  ].filter(Boolean);
 
   const requestOrigin = req.get('Origin');
 
@@ -26,7 +30,7 @@ export function enforceBrowserOrigin(req, res, next) {
     return next();
   }
 
-  if (requestOrigin !== expectedOrigin) {
+  if (!allowedOrigins.includes(normalizeOrigin(requestOrigin))) {
     return res.status(403).json({
       success: false,
       message: 'Blocked by origin security policy'
@@ -68,7 +72,6 @@ export function requireSecureConfig() {
   return true;
 }
 
-// Utility for generating secure random values if needed elsewhere.
 export function generateSecureSecret(bytes = 32) {
   return crypto.randomBytes(bytes).toString('hex');
 }

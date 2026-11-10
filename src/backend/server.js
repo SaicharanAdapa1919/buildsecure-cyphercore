@@ -17,10 +17,14 @@ requireSecureConfig();
 
 const app = express();
 const PORT = Number(process.env.PORT || 5000);
-const allowedOrigin = process.env.FRONTEND_URL || 'http://localhost:5173';
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174'
+].filter(Boolean);
 
-// Rate-limit state-changing API calls without penalizing normal dashboard reads.
-// Authentication and AI endpoints have their own stricter route-specific limits.
 const mutationLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 120,
@@ -38,7 +42,12 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false
 }));
 app.use(cors({
-  origin: allowedOrigin,
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('Not allowed by CORS'));
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
