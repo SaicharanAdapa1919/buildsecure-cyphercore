@@ -67,6 +67,10 @@ app.use('/api/reports', reportRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`FinTrack API listening on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`FinTrack API listening on port ${PORT}`);
+  });
+}
+
+export default app;
